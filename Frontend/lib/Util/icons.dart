@@ -15,6 +15,8 @@ const failedRegisterIcon =
     "https://cdn-icons-png.flaticon.com/128/16681/16681350.png";
 const textFieldImageName =
     "https://cdn-icons-png.flaticon.com/128/9856/9856425.png";
+const textFieldImagePhone =
+    "https://cdn-icons-png.flaticon.com/128/159/159836.png";
 const textFieldImageAddress =
     "https://cdn-icons-png.flaticon.com/128/9247/9247175.png";
 

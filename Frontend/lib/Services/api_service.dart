@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:io';
 
 class ApiService {
-  static const String baseUrl = 'http://192.168.0.112:8081';
+  static const String baseUrl = 'http://192.168.0.107:8081';
 
   static Future<http.Response> getCategories() async {
     try {
@@ -29,6 +29,7 @@ class ApiService {
     required String email,
     required String password,
     required String address,
+    required String phone,
   }) async {
     try {
       final url = Uri.parse('$baseUrl/auth/register');
@@ -41,6 +42,7 @@ class ApiService {
               'email': email,
               'password': password,
               'address': address,
+              'phone': phone,
               'role': 'USER',
             }),
           )

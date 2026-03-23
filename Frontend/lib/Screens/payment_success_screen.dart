@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'dart:typed_data';
+import 'package:greennest/Widget/custom_toast.dart';
 import 'main_navigation_screen.dart';
 
-class PaymentSuccessScreen extends StatelessWidget {
+class PaymentSuccessScreen extends StatefulWidget {
   final String paymentId;
   final String orderId;
   final int totalAmount;
@@ -18,6 +23,25 @@ class PaymentSuccessScreen extends StatelessWidget {
     required this.token,
     Key? key,
   }) : super(key: key);
+
+  @override
+  State<PaymentSuccessScreen> createState() => _PaymentSuccessScreenState();
+}
+
+class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 1), () {
+      if (mounted) {
+        CustomToast.success(
+          title: 'SMS Received 💬',
+          message:
+              'Your GreenNest order ${widget.orderId} of ₹${widget.totalAmount} is confirmed.',
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +105,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                       // Order ID
                       _buildDetailRow(
                         label: 'Order ID',
-                        value: orderId,
+                        value: widget.orderId,
                         isHighlight: true,
                       ),
                       const SizedBox(height: 16),
@@ -90,7 +114,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                       // Payment ID
                       _buildDetailRow(
                         label: 'Payment ID',
-                        value: paymentId,
+                        value: widget.paymentId,
                       ),
                       const SizedBox(height: 16),
                       Divider(color: Colors.green[200], height: 1),
@@ -98,7 +122,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                       // Payment Method
                       _buildDetailRow(
                         label: 'Payment Method',
-                        value: paymentMethod == 'UPI'
+                        value: widget.paymentMethod == 'UPI'
                             ? 'UPI'
                             : 'Debit/Credit Card',
                       ),
@@ -108,7 +132,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                       // Amount
                       _buildDetailRow(
                         label: 'Amount Paid',
-                        value: '₹$totalAmount',
+                        value: '₹${widget.totalAmount}',
                         isAmount: true,
                       ),
                     ],
@@ -182,8 +206,8 @@ class PaymentSuccessScreen extends StatelessWidget {
                   onPressed: () {
                     Navigator.of(context).pushAndRemoveUntil(
                       MaterialPageRoute(
-                        builder: (context) =>
-                            MainNavigationScreen(email: email, token: token),
+                        builder: (context) => MainNavigationScreen(
+                            email: widget.email, token: widget.token),
                       ),
                       (route) => false,
                     );
@@ -206,23 +230,24 @@ class PaymentSuccessScreen extends StatelessWidget {
                 width: double.infinity,
                 height: 50,
                 child: OutlinedButton(
-                  onPressed: () {
-                    // TODO: Navigate to Order History
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Order history coming soon!')),
-                    );
-                  },
+                  onPressed: () => _generateAndSavePDF(context),
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(color: Colors.green[700]!),
                   ),
-                  child: Text(
-                    'View Order',
-                    style: TextStyle(
-                      color: Colors.green[700],
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.download, color: Colors.green[700]),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Save Receipt',
+                        style: TextStyle(
+                          color: Colors.green[700],
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -230,6 +255,98 @@ class PaymentSuccessScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _generateAndSavePDF(BuildContext context) async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context pdfContext) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text(
+                'GreenNest Store',
+                style: pw.TextStyle(
+                  fontSize: 28,
+                  fontWeight: pw.FontWeight.bold,
+                  color:
+                      const PdfColor.fromInt(0xFF388E3C), // Colors.green[700]
+                ),
+              ),
+              pw.SizedBox(height: 24),
+              pw.Text('Payment Receipt',
+                  style: pw.TextStyle(
+                      fontSize: 20, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 24),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('Order ID:'),
+                  pw.Text(widget.orderId,
+                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                ],
+              ),
+              pw.SizedBox(height: 12),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('Payment ID:'),
+                  pw.Text(widget.paymentId),
+                ],
+              ),
+              pw.SizedBox(height: 12),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('Payment Method:'),
+                  pw.Text(widget.paymentMethod == 'UPI'
+                      ? 'UPI'
+                      : (widget.paymentMethod == 'COD'
+                          ? 'Cash on Delivery'
+                          : 'Debit/Credit Card')),
+                ],
+              ),
+              pw.SizedBox(height: 16),
+              pw.Divider(),
+              pw.SizedBox(height: 16),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('Total Amount Paid:',
+                      style: pw.TextStyle(
+                          fontSize: 16, fontWeight: pw.FontWeight.bold)),
+                  pw.Text(
+                    'Rs. ${widget.totalAmount}',
+                    style: pw.TextStyle(
+                      fontSize: 18,
+                      fontWeight: pw.FontWeight.bold,
+                      color: const PdfColor.fromInt(0xFF388E3C),
+                    ),
+                  ),
+                ],
+              ),
+              pw.SizedBox(height: 40),
+              pw.Text(
+                'Thank you for shopping with GreenNest!',
+                style: pw.TextStyle(
+                  fontStyle: pw.FontStyle.italic,
+                  color: const PdfColor.fromInt(0xFF757575), // Colors.grey[600]
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    // Prompt user to save the PDF (launches print/save dialog on mobile/web)
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => pdf.save(),
+      name: 'Receipt_${widget.orderId}',
     );
   }
 

@@ -208,6 +208,15 @@ class _LoginScreenState extends State<LoginScreen> {
                         obscureText: false,
                         keyboardType: TextInputType.emailAddress,
                         textFieldImage: textFieldImageEmail,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter $email';
+                          }
+                          if (!value.trim().endsWith('@gmail.com')) {
+                            return 'Only @gmail.com is allowed';
+                          }
+                          return null;
+                        },
                       ),
                       SizedBox(height: GSizes.spaceBtwInputFields),
                       // Password field with label

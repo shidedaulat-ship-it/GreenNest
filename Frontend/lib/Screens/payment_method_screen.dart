@@ -30,6 +30,16 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
   Future<void> _initiatePayment() async {
     setState(() => _isLoading = true);
 
+    if (_selectedMethod == 'COD') {
+      // Small delay to simulate processing
+      await Future.delayed(const Duration(seconds: 1));
+      if (mounted) {
+        setState(() => _isLoading = false);
+        _showCODSuccessDialog();
+      }
+      return;
+    }
+
     try {
       final paymentData = {
         'orderId': widget.orderId,
@@ -92,6 +102,81 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
     if (mounted) {
       setState(() => _isLoading = false);
     }
+  }
+
+  void _showCODSuccessDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.green[50],
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.check_circle,
+                  color: Colors.green[700],
+                  size: 64,
+                ),
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'Order Confirmed!',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Your order has been placed successfully with Cash on Delivery.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Navigate back to the home/main screen and return true to indicate success
+                    Navigator.of(context).pop(); // Close dialog
+                    Navigator.of(context)
+                        .pop(true); // Return to cart with success
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green[700],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Continue Shopping',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -184,6 +269,27 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                       subtitle: const Text('Visa, Mastercard, Rupay, etc.'),
                       secondary: Icon(
                         Icons.credit_card,
+                        color: Colors.green[700],
+                      ),
+                    ),
+                  ),
+                  // COD Option
+                  Card(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    child: RadioListTile<String>(
+                      value: 'COD',
+                      groupValue: _selectedMethod,
+                      onChanged: (value) {
+                        setState(() => _selectedMethod = value!);
+                      },
+                      title: const Text(
+                        'Cash on Delivery',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle:
+                          const Text('Pay with cash when your order arrives.'),
+                      secondary: Icon(
+                        Icons.local_shipping,
                         color: Colors.green[700],
                       ),
                     ),

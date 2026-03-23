@@ -25,6 +25,7 @@ class RegisterScreen extends StatefulWidget {
 class RegisterScreenState extends State<RegisterScreen> {
   final nameCtrl = TextEditingController();
   final emailCtrl = TextEditingController();
+  final phoneCtrl = TextEditingController();
   final passwordCtrl = TextEditingController();
   final addressCtrl = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -40,6 +41,7 @@ class RegisterScreenState extends State<RegisterScreen> {
         email: emailCtrl.text,
         password: passwordCtrl.text,
         address: addressCtrl.text,
+        phone: phoneCtrl.text,
       ).timeout(
         const Duration(seconds: 30),
         onTimeout: () {
@@ -55,7 +57,7 @@ class RegisterScreenState extends State<RegisterScreen> {
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
         print('Register Response Data: $data');
-        
+
         CustomToast.success(
           title: 'Registration Complete',
           message: 'Account created successfully',
@@ -68,9 +70,9 @@ class RegisterScreenState extends State<RegisterScreen> {
           // Navigate to MainNavigationScreen with email and token
           final email = data["email"] ?? emailCtrl.text;
           final token = data["token"] ?? data["_id"] ?? emailCtrl.text;
-          
+
           print('Register - Navigating with email: $email, token: $token');
-          
+
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(
               builder: (context) => MainNavigationScreen(
@@ -175,6 +177,15 @@ class RegisterScreenState extends State<RegisterScreen> {
                         obscureText: false,
                         keyboardType: TextInputType.text,
                         textFieldImage: textFieldImageName,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter $name';
+                          }
+                          if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value)) {
+                            return 'Name must contain only letters';
+                          }
+                          return null;
+                        },
                       ),
                       SizedBox(height: GSizes.spaceBtwInputFields),
                       // Email field with label
@@ -195,6 +206,45 @@ class RegisterScreenState extends State<RegisterScreen> {
                         obscureText: false,
                         keyboardType: TextInputType.emailAddress,
                         textFieldImage: textFieldImageEmail,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter $email';
+                          }
+                          if (!value.trim().endsWith('@gmail.com')) {
+                            return 'Only @gmail.com is allowed';
+                          }
+                          return null;
+                        },
+                      ),
+                      SizedBox(height: GSizes.spaceBtwInputFields),
+                      // Phone field with label
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Text(
+                          'Phone Number',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                      CustomTextField(
+                        controller: phoneCtrl,
+                        hintText: 'Enter Phone Number',
+                        obscureText: false,
+                        keyboardType: TextInputType.phone,
+                        textFieldImage: textFieldImagePhone,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter phone number';
+                          }
+                          // Regex for exactly 10 to 12 digits
+                          if (!RegExp(r'^\d{10,12}$').hasMatch(value.trim())) {
+                            return 'Phone number must be 10 to 12 digits';
+                          }
+                          return null;
+                        },
                       ),
                       SizedBox(height: GSizes.spaceBtwInputFields),
                       // Password field with label

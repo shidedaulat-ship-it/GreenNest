@@ -62,6 +62,14 @@ class _CartScreenState extends State<CartScreen> {
             sum + ((item['price'] as num) * (item['quantity'] as num)).toInt());
   }
 
+  int getGSTAmount() {
+    return (getTotalAmount() * 0.03).round();
+  }
+
+  int getFinalTotal() {
+    return getTotalAmount() + getGSTAmount() + 30; // 30 is the delivery fee
+  }
+
   Future<void> loadUserInfo() async {
     final response = await ApiService.getUserByEmail(widget.email);
     if (response.statusCode == 200) {
@@ -418,6 +426,27 @@ class _CartScreenState extends State<CartScreen> {
                         ],
                       ),
                       const SizedBox(height: 8),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'GST (3%)',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          Text(
+                            '₹${getGSTAmount()}',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -428,12 +457,11 @@ class _CartScreenState extends State<CartScreen> {
                               color: Colors.grey[600],
                             ),
                           ),
-                          Text(
-                            'Free',
+                          const Text(
+                            '₹30',
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
-                              color: Colors.green[700],
                             ),
                           ),
                         ],
@@ -453,7 +481,7 @@ class _CartScreenState extends State<CartScreen> {
                             ),
                           ),
                           Text(
-                            '₹${getTotalAmount()}',
+                            '₹${getFinalTotal()}',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,

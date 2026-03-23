@@ -39,6 +39,9 @@ dependencies:
   fluttertoast: ^8.2.12
   overlay_support: ^2.1.0
   shared_preferences: ^2.5.3
+  qr_flutter: ^4.1.0
+  pdf: ^3.11.3
+  printing: ^5.14.2
 
 dev_dependencies:
   flutter_test:

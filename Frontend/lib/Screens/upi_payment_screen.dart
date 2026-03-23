@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:greennest/Services/api_service.dart';
 import 'package:greennest/Widget/custom_toast.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'payment_success_screen.dart';
 import 'payment_error_screen.dart';
 
@@ -224,10 +225,11 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen> {
                         borderRadius: BorderRadius.circular(8),
                         color: Colors.grey[100],
                       ),
-                      child: Icon(
-                        Icons.qr_code_2,
-                        size: 200,
-                        color: Colors.green[700],
+                      child: QrImageView(
+                        data: _generateUPIString(),
+                        version: QrVersions.auto,
+                        size: 200.0,
+                        foregroundColor: Colors.green[800]!,
                       ),
                     ),
                     const SizedBox(height: 16),

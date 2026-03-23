@@ -27,6 +27,9 @@ class CheckoutScreen extends StatefulWidget {
 }
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
+  late int subTotal;
+  late int gstAmount;
+  final int deliveryFee = 30;
   late int totalAmount;
   bool _isLoading = false;
 
@@ -37,7 +40,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   void _calculateTotal() {
-    totalAmount = 0;
+    subTotal = 0;
     for (var item in widget.cartItems) {
       final price = item['price'] is int
           ? item['price']
@@ -45,8 +48,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       final quantity = item['quantity'] is int
           ? item['quantity']
           : int.parse(item['quantity'].toString());
-      totalAmount += (price * quantity) as int;
+      subTotal += (price * quantity) as int;
     }
+    gstAmount = (subTotal * 0.03).round();
+    totalAmount = subTotal + gstAmount + deliveryFee;
   }
 
   Future<void> _proceedToPayment() async {
@@ -89,7 +94,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
-        final orderId = responseData['_id'] ?? '';
+        final orderId = responseData['_id'] ??
+            responseData['orderId'] ??
+            responseData['id'] ??
+            (responseData['order'] != null
+                ? responseData['order']['_id']
+                : '') ??
+            '';
 
         CustomToast.success(
           title: 'Order Created',
@@ -244,7 +255,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               style: TextStyle(fontSize: 14),
                             ),
                             Text(
-                              '₹$totalAmount',
+                              '₹$subTotal',
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'GST (3%):',
+                              style: TextStyle(fontSize: 14),
+                            ),
+                            Text(
+                              '₹$gstAmount',
                               style: const TextStyle(fontSize: 14),
                             ),
                           ],
@@ -258,7 +283,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               style: TextStyle(fontSize: 14),
                             ),
                             Text(
-                              '₹0',
+                              '₹$deliveryFee',
                               style: const TextStyle(fontSize: 14),
                             ),
                           ],

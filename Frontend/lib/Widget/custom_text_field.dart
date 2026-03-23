@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:greennest/Util/colors.dart';
 import 'package:greennest/Util/sizes.dart';
 
@@ -9,6 +8,7 @@ class CustomTextField extends StatefulWidget {
   final bool obscureText;
   final TextInputType keyboardType;
   final String textFieldImage;
+  final String? Function(String?)? validator;
 
   const CustomTextField({
     super.key,
@@ -17,6 +17,7 @@ class CustomTextField extends StatefulWidget {
     required this.obscureText,
     required this.keyboardType,
     required this.textFieldImage,
+    this.validator,
   });
 
   @override
@@ -38,12 +39,13 @@ class _CustomTextFieldState extends State<CustomTextField> {
       controller: widget.controller,
       obscureText: _obscure,
       keyboardType: widget.keyboardType,
-      validator: (value) {
-        if (value == null || value.trim().isEmpty) {
-          return 'Please enter ${widget.hintText}';
-        }
-        return null;
-      },
+      validator: widget.validator ??
+          (value) {
+            if (value == null || value.trim().isEmpty) {
+              return 'Please enter ${widget.hintText}';
+            }
+            return null;
+          },
       decoration: InputDecoration(
         hintText: widget.hintText,
         hintStyle: TextStyle(

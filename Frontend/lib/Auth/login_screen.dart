@@ -212,8 +212,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           if (value == null || value.trim().isEmpty) {
                             return 'Please enter $email';
                           }
-                          if (!value.trim().endsWith('@gmail.com')) {
-                            return 'Only @gmail.com is allowed';
+                          if (!value.trim().contains('@') || !value.trim().contains('.')) {
+                            return 'Please enter a valid email address';
                           }
                           return null;
                         },
